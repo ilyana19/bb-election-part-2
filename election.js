@@ -1,6 +1,25 @@
 document.addEventListener("DOMContentLoaded", function() {
-  var candidatesList = document.querySelector(".candidates");
+  var candidatesList = document.querySelector(".candidate-list");
   var status = document.querySelector("#status");
+  var refreshButton = document.querySelector("#refresh");
+
+  refreshButton.addEventListener("click", function() {
+    console.log("refresh!");
+
+    $.ajax({
+      url: "https://bb-election-api.herokuapp.com/",
+      method: "GET",
+      data: {},
+      dataType: "json"
+    }).done(function(responseData) {
+      status.innerHTML = "";
+
+      var candidates = document.querySelectorAll(".candidates");
+      for (var i = 0; i < candidates.length; i++) {
+        candidates[i].innerHTML = responseData.candidates[i].name + ": " + responseData.candidates[i].votes + " votes";
+      }
+    });
+  });
 
   $.ajax({
     url: "https://bb-election-api.herokuapp.com/",
@@ -11,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var candidates = responseData.candidates;
     for (var i = 0; i < candidates.length; i++) {
       var listItem = document.createElement("li");
+      listItem.className = "candidates"
       listItem.innerHTML = candidates[i].name + ": " + candidates[i].votes + " votes";
       candidatesList.append(listItem);
 
