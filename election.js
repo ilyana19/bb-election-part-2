@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
+  var candidatesList = document.querySelector(".candidates");
+  var status = document.querySelector("#status");
+
   $.ajax({
     url: "https://bb-election-api.herokuapp.com/",
     method: "GET",
@@ -7,31 +10,41 @@ document.addEventListener("DOMContentLoaded", function() {
   }).done(function(responseData){
     var candidates = responseData.candidates;
     for (var i = 0; i < candidates.length; i++) {
-      var li = $("<li>");
-      li.html(candidates[i].name + ": " + candidates[i].votes + " votes");
+      var listItem = document.createElement("li");
+      listItem.innerHTML = candidates[i].name + ": " + candidates[i].votes + " votes";
+      candidatesList.append(listItem);
 
-      var form = $("<form>");
-      form.attr({
-        method: "POST",
-        action: "https://bb-election-api.herokuapp.com/vote?id="
-      });
+      var form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://bb-election-api.herokuapp.com/vote";
 
-      var input_hidden = $("<input>").attr({
-        type: "hidden",
-        name: "id",
-        value: candidates[i].id
-      });
+      var hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = "id";
+      hiddenInput.value = candidates[i].id;
 
+      var submitButton = document.createElement("input");
+      submitButton.type = "submit";
+      submitButton.value = "Vote";
 
-      var submit_button = $("<input>").attr({
-        class: "submit-button",
-        type: "submit",
-        value: "Vote"
-      });
-
-      form.append(input_hidden, submit_button)
-      li.append(form);
-      $(".candidates").append(li);
+      form.append(hiddenInput, submitButton);
+      candidatesList.append(form);
     }
+
+    candidatesList.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      $.ajax({
+        url: "https://bb-election-api.herokuapp.com/vote",
+        method: "POST",
+        data: $(e.target).serialize()
+      }).done(function() {
+        console.log("it worked");
+        status.innerHTML = "Thank you for your vote!";
+      }).fail(function() {
+        console.log("it failed");
+        status.innerHTML = "Oops! Something went wrong!";
+      });
+    });
   });
 });
